@@ -1,0 +1,7 @@
+.tagline {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.82rem;
+  line-height: 1.9;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}

@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# turbo
+.turbo/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# env
+.env
+.env.local
+.env.*.local
+
+# os
+.DS_Store
+Thumbs.db
+
+# editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json

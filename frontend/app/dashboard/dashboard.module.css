@@ -1,0 +1,155 @@
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.navUser {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.navName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.navEmail {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+.heading {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.stat {
+  padding: 1.25rem;
+}
+
+.statLabel {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.statValue {
+  margin-top: 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.statValueEmpty {
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.panel {
+  margin-top: 2rem;
+  padding: 1.75rem;
+}
+
+.panelTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.panelBody {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.steps {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.stepIndex {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.7rem;
+  color: var(--accent);
+}
+
+.stepTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.stepBody {
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  line-height: 1.55;
+}

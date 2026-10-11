@@ -1,0 +1,7 @@
+packages:
+  - backend
+  - frontend
+
+# pnpm >= 10 gates postinstall build scripts behind an allowlist.
+allowBuilds:
+  unrs-resolver: false
