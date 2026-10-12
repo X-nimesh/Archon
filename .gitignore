@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# turbo
+.turbo/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+# Machine-specific compose variables (secrets, port overrides). The committed
+# .env.example is the template; this one is private.
+.env
+.env.local
+
+# Named volumes are managed by Docker, not the repo. Gitignoring the name keeps
+# a stray `docker volume create` artefact out of the tree.
+postgres-data/
+volumes/
+
+# Database dumps. These contain password hashes and session-token hashes.
+.backups/
+*.sql.gz
+pg-*.sql
+.* 
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# os
+.DS_Store
+Thumbs.db
+
+# editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json

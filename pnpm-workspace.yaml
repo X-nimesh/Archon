@@ -1,0 +1,11 @@
+packages:
+  - backend-go
+  - frontend
+
+# `backend` (the retired NestJS service) is deliberately NOT listed here.
+# Keeping it out of the workspace means turbo and pnpm ignore it entirely, so
+# it never builds, lints, tests, or starts. See backend/README.md.
+
+# pnpm >= 10 gates postinstall build scripts behind an allowlist.
+allowBuilds:
+  unrs-resolver: false
