@@ -1,0 +1,397 @@
+/* ============================================================
+   New project wizard — layout that has no home in globals.css.
+
+   Everything shared (`.pn`, `.fld`, `.in`, `.cd`, `.row`, `.cards`,
+   `.sg`, `.tools`, `.hint`, `.err`, `.cap`, `.sub`) comes from
+   globals.css and is referenced as a plain class name. Only the
+   three-column wizard frame, the step rail and the plan-summary
+   widgets live here.
+   ============================================================ */
+
+/* Breadcrumb above the page heading. */
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.crumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crumb a:hover {
+  text-decoration: none;
+  color: var(--fg);
+}
+
+/* ============================================================
+   Frame: steps rail | step body | live summary
+   ============================================================ */
+.wiz {
+  display: grid;
+  grid-template-columns: 176px minmax(0, 1fr) 308px;
+  gap: 16px;
+  align-items: start;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 0;
+}
+
+.stp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.stp:hover {
+  color: var(--fg);
+}
+
+.stp .num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font: 11px var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.stp[aria-current='step'] {
+  color: var(--fg);
+  background: var(--panel);
+}
+
+.stp[aria-current='step'] .num {
+  border-color: var(--em);
+  color: var(--em);
+}
+
+.stp.done .num {
+  background: var(--em-solid);
+  border-color: var(--em-solid);
+  color: var(--on-em);
+}
+
+.sum {
+  position: sticky;
+  top: 0;
+}
+
+/* The step body panel gets a little more breathing room than `.pn-b`. Own
+   padding rather than stacking on `.pn-b` so the two never race. */
+.pad {
+  padding: 20px;
+}
+
+/* globals.css gives `fieldset` and `.fld` `display: flex`, which outranks the
+   user-agent `[hidden] { display: none }` rule. Steps 2–5 and the prod-only
+   auto-destroy field are toggled with `hidden`, so they need this back. */
+:global(fieldset[hidden]),
+:global(.fld[hidden]) {
+  display: none;
+}
+
+/* ============================================================
+   Inputs the shared primitives do not cover
+   ============================================================ */
+
+/* Currency prefix glued to the left edge of an input. */
+.pre {
+  display: flex;
+  min-width: 0;
+}
+
+.pre > span {
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 5px 0 0 5px;
+  background: var(--panel2);
+  color: var(--muted);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* `.in` is global, so it has to be reached through `:global`. */
+.pre :global(.in) {
+  border-radius: 0 5px 5px 0;
+}
+
+/* Range slider with a monospace value readout. */
+.rng {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rng input {
+  flex: 1;
+  accent-color: var(--em-solid);
+  min-width: 0;
+}
+
+.rng output {
+  font: 12.5px var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  min-width: 104px;
+  text-align: right;
+}
+
+/* Attachment chip with an inline remove control. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel2);
+  font: 12px var(--font-geist-mono), ui-monospace, monospace;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.chip button {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--muted);
+  flex: none;
+}
+
+.chip button:hover {
+  color: var(--fg);
+  background: var(--line);
+}
+
+.chip button:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+/* Inline suggestion derived from another answer. */
+.sug {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px dashed var(--cy-line);
+  border-radius: 5px;
+  background: var(--cy-bg);
+  color: var(--fg);
+  font-size: 12.5px;
+}
+
+/* ============================================================
+   Footer navigation
+   ============================================================ */
+.nav-b {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 16px;
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ============================================================
+   Review step
+   ============================================================ */
+.rv {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.rv > div {
+  background: var(--panel);
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.rv dt {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.rv dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.rv button {
+  all: unset;
+  cursor: pointer;
+  color: var(--cy);
+  font-size: 12px;
+}
+
+.rv button:hover {
+  text-decoration: underline;
+}
+
+.rv button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.next {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.next li {
+  margin: 3px 0;
+}
+
+/* ============================================================
+   Live plan summary
+   ============================================================ */
+.est {
+  font: 500 22px/1.2 var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  margin: 6px 0 2px;
+}
+
+/* Estimate range against the budget. Separate from the global `.bar`
+   so the two fills cannot fight over the same rule. */
+.cost {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.costHigh {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--cy-bg);
+  border-right: 1px dashed var(--cy);
+}
+
+.costLow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--em-solid);
+}
+
+.costTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--faint);
+}
+
+.costOver .costHigh {
+  background: var(--rd-bg);
+  border-right-color: var(--rd);
+}
+
+.will {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.will li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12.5px;
+}
+
+.will li > svg {
+  margin-top: 2px;
+  color: var(--em);
+  width: 14px;
+  height: 14px;
+}
+
+.will li.w > svg {
+  color: var(--am);
+}
+
+/* `.crumb a`, `.will li > svg` and the `.cost*` fills are element selectors, so
+   they need no `:global`. Only class selectors have to be opted out. */
+
+/* ============================================================
+   Narrow viewports: the rail becomes a horizontal scroller, the
+   summary drops under the form.
+   ============================================================ */
+@media (max-width: 1180px) {
+  .wiz {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .steps {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    overflow-x: auto;
+    position: static;
+  }
+}
+
+@media (max-width: 860px) {
+  .wiz {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sum {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .rv > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rv dt {
+    grid-column: 1 / -1;
+  }
+}

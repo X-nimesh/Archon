@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@terrastruct/d2": "^0.1.33",
     "jose": "^6.2.12",
     "next": "16.3.8",
     "react": "19.2.8",

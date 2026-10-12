@@ -1,0 +1,20 @@
+/* ============================================================
+   Dashboard / project Overview — page-specific styles only.
+
+   Everything structural (page, ph, acts, pn, pn-h, pn-b, empty,
+   btn) comes from globals.css. This module only fills the gaps
+   that the shared layer does not cover, and nothing here
+   hardcodes a colour.
+   ============================================================ */
+
+/* Page-level empty state — centred, with room to breathe. */
+.empty {
+  text-align: center;
+  padding: 34px 16px;
+}
+
+/* The call to action under the empty-state copy. */
+.cta {
+  display: flex;
+  justify-content: center;
+}

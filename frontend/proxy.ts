@@ -1,35 +1,40 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const SESSION_COOKIE = 'archon_session';
+const REFRESH_COOKIE = 'archon_refresh';
 
-/** Reachable without a session. */
-const PUBLIC_ROUTES = ['/', '/login', '/signup'];
-
-function isPublic(pathname: string): boolean {
-  return PUBLIC_ROUTES.includes(pathname);
-}
+/** Routes that require a session cookie to be present. */
+const PROTECTED_PREFIXES = ['/dashboard'];
 
 /**
  * Optimistic route guard.
  *
- * This only checks whether the session cookie is *present* — it cannot confirm
- * the token is still valid without a backend round-trip. That is intentional:
- * proxy runs on every request including prefetches, so it must stay cheap. The
- * authoritative check lives in `lib/dal.ts` (`verifySession`), which each
- * protected page calls.
+ * Checks only whether a refresh cookie is *present* — it cannot validate the
+ * token without a backend round-trip. That is intentional: proxy runs on every
+ * request including prefetches, so it must stay cheap. The authoritative check
+ * lives in `lib/dal.ts` (`verifySession`), which each protected page calls.
+ *
+ * The *refresh* cookie is the one to check, not the access cookie: the access
+ * token expires after 15 minutes, and keying off it would bounce a signed-in
+ * user to /login every quarter hour.
+ *
+ * It deliberately does NOT redirect signed-in users away from public routes.
+ * Doing both directions is what the Next.js guide suggests, but that example
+ * works only because proxy can decrypt the cookie itself. Ours is an opaque
+ * backend token, so proxy cannot tell a valid cookie from a stale one. A stale
+ * cookie (e.g. after a backend restart regenerates JWT_SECRET) would then bounce
+ * /dashboard -> /login -> /dashboard forever.
+ *
+ * Instead, /login and /signup call `getUser()` and redirect on their own when
+ * the session is genuinely valid. One-way here, authoritative there.
  *
  * Next.js 16: this file was `middleware.ts` before v16.
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSessionCookie = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (!hasSessionCookie && !isPublic(pathname)) {
+  if (isProtected && !request.cookies.get(REFRESH_COOKIE)?.value) {
     return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (hasSessionCookie && isPublic(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();

@@ -32,16 +32,27 @@ Dev server runs on **port 3000**.
 ## Auth
 
 The browser never talks to the API. Forms POST to Server Actions in
-`app/actions/auth.ts`, which call the backend server-side and store the returned
-JWT in the httpOnly `archon_session` cookie.
+`app/actions/auth.ts`, which call the **Go** backend (`../backend-go`, port 3001)
+server-side and store the returned tokens in two `httpOnly` cookies:
+`archon_access` (15 min) and `archon_refresh` (30 days, rotated on every use).
 
-Two guards, deliberately:
+Three guards, each with a distinct job:
 
-- `proxy.ts` — optimistic. Checks only that the cookie *exists*, so it stays fast
-  on prefetched routes. This file was `middleware.ts` before Next 16.
-- `lib/dal.ts` → `verifySession()` — authoritative. Confirms the token is still
-  valid and the account still exists, then redirects to `/login` otherwise.
-  **Every protected page must call it.**
+- `proxy.ts` — optimistic. Checks only that the refresh cookie *exists*, so it
+  stays fast on prefetched routes. This file was `middleware.ts` before Next 16.
+- `lib/dal.ts` → `verifySession()` — authoritative. Confirms the access token is
+  still valid and the account still exists. **Every protected page must call it.**
+- `app/api/session/route.ts` — performs the rotation. It has to be a Route
+  Handler because **cookies can only be written in a Server Action or Route
+  Handler, never during a render**, and a refresh token is single-use — rotating
+  in the DAL would invalidate the caller's own cookie with no way to replace it,
+  which the backend treats as theft and answers by revoking the whole session
+  family.
+
+`proxy.ts` also redirects one way only (no cookie on a protected route →
+`/login`). It deliberately does *not* bounce signed-in users off `/login`, because
+it cannot tell a valid cookie from a stale one — doing both directions would loop
+forever after a backend restart. See rules 1–3 in the root `AGENTS.md`.
 
 ## Notes for agents and new contributors
 

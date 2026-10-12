@@ -1,0 +1,16 @@
+{
+  "name": "@archon/backend-go",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Archon API server (Go)",
+  "scripts": {
+    "dev": "go run ./cmd/api",
+    "build": "go build -o bin/api ./cmd/api",
+    "start": "./bin/api",
+    "test": "go test ./...",
+    "typecheck": "go vet ./...",
+    "lint": "sh scripts/lint.sh",
+    "format": "gofmt -w .",
+    "clean": "rm -rf bin"
+  }
+}

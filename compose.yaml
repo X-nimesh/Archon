@@ -1,0 +1,130 @@
+# Archon — local development stack.
+#
+#   docker compose up -d          # start everything (postgres + api + web)
+#   docker compose up -d postgres # just the database
+#   docker compose logs -f api    # tail the API
+#   docker compose down           # stop (data survives)
+#   docker compose down -v        # stop and DELETE the database volume
+#
+# Hot reload: the repo root is bind-mounted into both app containers, so edits on
+# the host are picked up in place. Only postgres uses a named volume, because
+# container filesystems must not be shadowed by a host mount there.
+
+name: archon
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-archon}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-archon}
+      POSTGRES_DB: ${POSTGRES_DB:-archon}
+      # Deterministic collation so index ordering does not vary by host locale.
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    ports:
+      # Exposed for psql / GUI clients. The apps talk over the compose network.
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18 changed its data layout: the image now stores the cluster
+      # in a version-specific subdirectory (…/18/docker) and expects ONE mount at
+      # /var/lib/postgresql. Mounting the old /var/lib/postgresql/data path makes
+      # the entrypoint abort, because it sees data at a location 18 will not use.
+      #
+      # Mounting the parent means the image picks the version directory itself, so
+      # a future 19 upgrade lands beside 18 instead of colliding with it — and
+      # pg_upgrade --link stays inside one mount boundary.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      # pg_isready alone succeeds while the server is still in recovery, which
+      # lets the API start against a database that cannot serve queries yet.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-archon} -d ${POSTGRES_DB:-archon}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks: [archon]
+
+  api:
+    build:
+      context: .
+      dockerfile: backend-go/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "3001"
+      HOST: "0.0.0.0"
+      # Service name resolution: the host-side `localhost:5432` is not reachable
+      # from inside the network.
+      DATABASE_URL: postgres://${POSTGRES_USER:-archon}:${POSTGRES_PASSWORD:-archon}@postgres:5432/${POSTGRES_DB:-archon}?sslmode=disable
+      RUN_MIGRATIONS: "true"
+      CORS_ORIGIN: "http://localhost:3000,http://web:3000"
+      # The browser reaches the API through Next.js, never directly, so the API
+      # does not need to be published for local dev.
+      NODE_ENV: development
+      ARGON2_MEMORY_KIB: ${ARGON2_MEMORY_KIB:-65536}
+      ARGON2_ITERATIONS: ${ARGON2_ITERATIONS:-3}
+    ports:
+      - "${API_PORT:-3001}:3001"
+    volumes:
+      # Whole repo, so backend AND frontend edits hot-reload from one mount.
+      - .:/workspace
+      # Keep the image's built binary and module cache out of the host tree.
+      - api-go-mod-cache:/go/pkg/mod
+      - api-go-build-cache:/root/.cache/go-build
+    working_dir: /workspace/backend-go
+    networks: [archon]
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      # Resolved inside the compose network.
+      BACKEND_URL: http://api:3001
+      # Instructs Next.js dev to watch bind-mounted files rather than ignoring
+      # them, which is required on Docker Desktop.
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      NODE_ENV: development
+      PORT: "3000"
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - .:/workspace
+      - web-next-cache:/workspace/frontend/.next
+      - web-node-modules:/workspace/frontend/node_modules
+      - web-root-node-modules:/workspace/node_modules
+    working_dir: /workspace/frontend
+    networks: [archon]
+
+networks:
+  archon:
+    driver: bridge
+
+volumes:
+  # Named volume: database files must live in the container's own filesystem.
+  # Keeping them in a named volume (not a bind mount) is what makes `down` safe.
+  # Mounted at /var/lib/postgresql, NOT .../data — required by PostgreSQL 18+.
+  postgres-data:
+    driver: local
+
+  # Module/build caches live in volumes so a host bind mount does not shadow the
+  # ones baked into the image — recreating them on every `up` would be slow.
+  api-go-mod-cache:
+    driver: local
+  api-go-build-cache:
+    driver: local
+
+  web-node-modules:
+    driver: local
+  web-root-node-modules:
+    driver: local
+  web-next-cache:
+    driver: local

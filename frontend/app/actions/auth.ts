@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { createSession, deleteSession } from '@/lib/session';
+import { createSession, deleteSession, readRefreshToken } from '@/lib/session';
 import {
   LoginSchema,
   SignupSchema,
@@ -35,8 +35,8 @@ export async function login(
   }
 
   try {
-    const { accessToken } = await api.login(parsed.data);
-    await createSession(accessToken);
+    const pair = await api.login(parsed.data);
+    await createSession(pair);
   } catch (error) {
     return {
       message:
@@ -66,8 +66,8 @@ export async function signup(
   }
 
   try {
-    const { accessToken } = await api.signup(parsed.data);
-    await createSession(accessToken);
+    const pair = await api.signup(parsed.data);
+    await createSession(pair);
   } catch (error) {
     return {
       message:
@@ -81,6 +81,18 @@ export async function signup(
 }
 
 export async function logout(): Promise<void> {
+  const refreshToken = await readRefreshToken();
+
+  // Revoke server-side even if the cookie was already gone, so a token the
+  // browser forgot cannot stay alive.
+  if (refreshToken) {
+    try {
+      await api.logout(refreshToken);
+    } catch {
+      // Best effort: the local session must be cleared either way.
+    }
+  }
+
   await deleteSession();
   redirect('/login');
 }

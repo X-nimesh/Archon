@@ -1,7 +1,18 @@
-# Archon Backend
+# Archon Backend (NestJS) — RETIRED
 
-Archon's backend API — will eventually handle requirement parsing, architecture
-generation, plan/apply orchestration, and agent activity.
+> **This service is retired.** The API is now written in Go and lives in
+> [`../backend-go`](../backend-go). This folder is kept for reference and is
+> **deliberately excluded from the pnpm workspace**, so `pnpm dev`, `pnpm build`,
+> and `pnpm check` never touch it — turbo does not know it exists.
+>
+> The tree here is frozen as of the Go migration. Its `node_modules/` is stale.
+> Do not add features; do not run its scripts expecting them to be part of CI.
+>
+> Note: port **3001** now belongs to the Go server. Starting Nest here will
+> collide with it.
+
+Archon's original backend API — will eventually handle requirement parsing,
+architecture generation, plan/apply orchestration, and agent activity.
 
 Part of the Archon monorepo. See the [root README](../README.md) for all commands.
 
@@ -11,15 +22,12 @@ NestJS 12 on Fastify, TypeScript 6 (ESM). PostgreSQL (not yet connected).
 
 ## Commands
 
-Install from the **repo root** first, then run these:
+These only work from inside this folder and are **not** part of the workspace:
 
 ```bash
-pnpm dev:backend
-pnpm --filter @archon/backend build
-pnpm --filter @archon/backend test
+npm install
+npm run start:dev
 ```
-
-Dev server runs on **port 3001** (`PORT` in `.env`).
 
 ## Auth
 
@@ -34,23 +42,3 @@ with bcrypt and issues a 7-day JWT that the frontend stores in an httpOnly cooki
 
 Protect a route with `@UseGuards(JwtAuthGuard)` and read the caller with
 `@CurrentUser()`. See `src/auth/`.
-
-### ⚠️ Users are stored in memory
-
-`UsersService` keeps accounts in a `Map`, so **every account disappears when the
-backend restarts**. That is deliberate — it keeps the persistence seam obvious
-until PostgreSQL is connected. Swap the two Maps for a repository and nothing
-else in the auth module needs to change.
-
-### Env
-
-```bash
-cp .env.example .env
-```
-
-`JWT_SECRET` is optional in dev (a random one is generated per boot, which
-invalidates sessions on restart) but **required** when `NODE_ENV=production`.
-
-## Status
-
-Auth is wired end to end. No domain modules beyond Nest's default yet.

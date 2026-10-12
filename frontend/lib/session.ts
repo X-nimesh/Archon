@@ -1,33 +1,69 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 
-export const SESSION_COOKIE = 'archon_session';
-
-/** Matches the backend's 7-day token lifetime. */
-const MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
-
 /**
- * Stores the backend-issued JWT in an httpOnly cookie so client-side
- * JavaScript can never read it. The browser only ever holds an opaque value.
+ * Two httpOnly cookies mirroring the backend's token pair.
+ *
+ * The access token is short-lived (15 min) and is sent as a bearer header by
+ * `dal.ts`. The refresh token is long-lived (30 days) and is only ever used to
+ * mint a new access token.
+ *
+ * Neither is readable from client-side JavaScript.
  */
-export async function createSession(accessToken: string): Promise<void> {
-  const cookieStore = await cookies();
+export const ACCESS_COOKIE = 'archon_access';
+export const REFRESH_COOKIE = 'archon_refresh';
 
-  cookieStore.set(SESSION_COOKIE, accessToken, {
+const FALLBACK_ACCESS_TTL = 15 * 60;
+const FALLBACK_REFRESH_TTL = 30 * 24 * 60 * 60;
+
+// Exported so the /api/session Route Handler, which cannot use next/headers to
+// build a response, can set the same lifetimes.
+export { FALLBACK_ACCESS_TTL, FALLBACK_REFRESH_TTL };
+
+/** Cookies are secure in production only; on plain http://localhost a secure
+ *  cookie would be dropped by the browser and login would appear to silently fail. */
+function secure(): boolean {
+  return process.env.NODE_ENV === 'production';
+}
+
+export async function createSession(pair: {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}): Promise<void> {
+  const store = await cookies();
+
+  store.set(ACCESS_COOKIE, pair.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: secure(),
     sameSite: 'lax',
     path: '/',
-    maxAge: MAX_AGE_SECONDS,
+    maxAge: pair.expiresIn > 0 ? pair.expiresIn : FALLBACK_ACCESS_TTL,
+  });
+
+  // Refresh token is rotated on every use, so its expiry must outlive the
+  // access token by a wide margin.
+  store.set(REFRESH_COOKIE, pair.refreshToken, {
+    httpOnly: true,
+    secure: secure(),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: FALLBACK_REFRESH_TTL,
   });
 }
 
-export async function readSessionToken(): Promise<string | null> {
-  const cookieStore = await cookies();
-  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
+export async function readAccessToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(ACCESS_COOKIE)?.value ?? null;
+}
+
+export async function readRefreshToken(): Promise<string | null> {
+  const store = await cookies();
+  return store.get(REFRESH_COOKIE)?.value ?? null;
 }
 
 export async function deleteSession(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  const store = await cookies();
+  store.delete(ACCESS_COOKIE);
+  store.delete(REFRESH_COOKIE);
 }

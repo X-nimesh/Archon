@@ -1,0 +1,244 @@
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.side {
+  width: 236px;
+  flex: none;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.16s ease;
+}
+
+.rail .side {
+  width: 58px;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 17px;
+  height: 52px;
+  flex: none;
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+
+.brandIcon {
+  width: 22px;
+  height: 22px;
+  color: var(--em);
+  stroke-width: 1.6;
+}
+
+.brandRow b {
+  display: block;
+  line-height: 1.1;
+}
+
+.nav {
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.navH {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 14px 10px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navI {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  color: var(--muted);
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.navI:hover:not([aria-disabled='true']) {
+  background: var(--panel2);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* Active route. Driven by .current from shell.tsx (not aria-current alone) so
+   the rail variant can also target it. */
+.navI.current {
+  background: var(--em-bg);
+  color: var(--em);
+}
+
+.navI.current:hover {
+  background: var(--em-bg);
+  color: var(--em);
+  text-decoration: none;
+}
+
+.navI[aria-disabled='true'] {
+  opacity: 0.42;
+  cursor: default;
+}
+
+/* Nav label. Truncates rather than forcing the rail wider when a label is long,
+   and is what `.rail .lbl` collapses to icon-only. */
+.lbl {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail .lbl,
+.rail .navH,
+.rail .brandRow div {
+  display: none;
+}
+
+.rail .main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  height: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--em-bg);
+  border: 1px solid var(--em-line);
+  color: var(--em);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.userEmail {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.scrim {
+  display: none;
+}
+
+/* Rail toggle and hamburger swap at the breakpoint below. Both need a class so
+   the media query can target them; an undefined one would leak into the DOM as
+   the literal string "undefined". */
+.onlyWide {
+  display: grid;
+}
+
+.onlyNarrow {
+  display: none;
+}
+
+/* Narrow: the rail becomes an overlay drawer. */
+@media (max-width: 860px) {
+  .onlyNarrow {
+    display: grid;
+  }
+
+  .onlyWide {
+    display: none;
+  }
+
+  .side {
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 250px !important;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+  }
+
+  .open .side {
+    transform: none;
+  }
+
+  .open .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .rail .lbl,
+  .rail .navH,
+  .rail .brandRow div,
+  .rail   .userMeta {
+    display: none;
+  }
+}
